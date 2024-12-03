@@ -1,20 +1,51 @@
-import { HelloController } from "./Controllers";
-import { ServiceProvider } from "../Application/DependencyInjection";
+import swaggerJSDoc from 'swagger-jsdoc';
+import swaggerUi from 'swagger-ui-express';
+import express from 'express';
+import path from 'path';
+import { ServiceProvider } from '../Application/DependencyInjection';
+import registerDevServices from '../Infrastructure/Dev/DependencyInjection';
+import { registerRoutes } from '../API/Routes';
 
-import * as express from "express";
-import registerDevServices from "../Infrastructure/Dev/DependencyInjection";
+// Initialisation de Swagger JSDoc
+const options = {
+  definition: {
+    openapi: '3.0.0', // Version de l'API OpenAPI
+    info: {
+      title: 'API Example', // Titre de l'API
+      description: 'Documentation automatique de l\'API', // Description de l'API
+      version: '1.0.0', // Version de l'API
+    },
+    servers: [
+      {
+        url: 'http://localhost:8080', // L'URL de l'API
+      },
+    ],
+  },
+  // Liste des fichiers de routes à analyser pour générer la documentation
+  apis: [
+    path.join(__dirname, 'Routes/hello.js'),  // Ajustez selon la structure de votre projet
+    path.join(__dirname, 'Routes/index.js'), // Ajustez selon la structure de votre projet
+  ],
+};
 
-export const services = new ServiceProvider();
+console.log(__dirname);
+// Générer la documentation Swagger en JSON
+const swaggerSpec = swaggerJSDoc(options);
+
+// Création de l'application Express
+const app = express();
+const port = 8080;
+
+// Utilisation de Swagger UI pour exposer l'interface de documentation
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
+// Enregistrement des services
+const services = new ServiceProvider();
 registerDevServices(services);
 
-export const reportController = new HelloController(services);
-
-const app = express();
-const port = 30000;
-
-app.get("/hello", async (req: express.Request, res: express.Response) => await reportController.hello(req, res));
-app.get("/", async (req: express.Request, res: express.Response) => { res.status(200).send(await new Promise((resolve) => resolve("Hello World!"))) })
+// Enregistrement des routes
+registerRoutes(app, services);
 
 app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`)
-})
+  console.log(`Server is running on http://localhost:${port}`);
+});
