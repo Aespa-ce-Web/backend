@@ -1,8 +1,20 @@
 {
+  "name": "projet-store",
+  "version": "1.0.0",
+  "description": "Backend projet STORE",
+  "main": "lib/API/app.js",
+  "scripts": {
+    "start": "tsc && node lib/API/app.js",
+    "dev": "tsc-watch --onSuccess \"node lib/API/app.js\"",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "AESPA'CE WEB",
+  "license": "ISC",
   "dependencies": {
     "express": "^4.21.1"
   },
   "devDependencies": {
-    "@types/express": "^5.0.0"
+    "@types/express": "^5.0.0",
+    "tsc-watch": "^6.0.0"
   }
 }
