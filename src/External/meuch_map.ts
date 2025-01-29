@@ -4,7 +4,8 @@ interface MeuchEndpointInput {
     description: string;
     type: "GET" | "POST" | "PUT" | "DELETE";  // Type de la méthode HTTP
     routeFormat?: string;  // Format de la route (optionnel)
-    queryParams?: string[];  // Paramètres de requête optionnels
+    queryParams?: string[];  // Paramètres de requête (optionnels)
+    body?: string;  // Corps de la requête (optionnel)
 }
 
 export const endpoints: MeuchEndpointInput[] = [
@@ -19,6 +20,13 @@ export const endpoints: MeuchEndpointInput[] = [
         endpoint: "/ressources/available",
         description: "Récupération des ressources disponibles entre deux dates",
         type: "GET",
-        queryParams: ["startDate", "endDate"]
+        queryParams: ["start_date", "end_date"]
+    },
+    {
+        key: "STO_RESERVER_RESSOURCE",
+        endpoint: "/ressources/reserver",
+        description: "Réserver une ressource pendant une période donnée",
+        type: "POST",
+        body : "{ressource_id:number ,start_date:Date ,end_date:Date}"
     }
 ];

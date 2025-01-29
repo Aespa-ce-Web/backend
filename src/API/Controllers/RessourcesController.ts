@@ -1,6 +1,7 @@
 import { Request, Response } from "express"
 import { DomainException } from "../../Domain/Exceptions";
 import { RessourcesRepository } from "../../Application/Ressources/Service/RessourcesRepository";
+import { RessourceNotFoundException } from "../../Domain/Exceptions/RessourceNotFoundException";
 
 
 export class RessourcesController {
@@ -33,31 +34,91 @@ export class RessourcesController {
     }
 
     public async getAvailableRessources(request: Request, response: Response): Promise<void> {
+        
+        const { start_date, end_date } = request.query;
 
-        const startDate = String(request.query.start_date);
-        const endDate = String(request.query.end_date);
+        const validation = this.validateDates(start_date as string, end_date as string);
 
-        if (startDate === undefined || endDate === undefined) {
-            response.status(400).send("please provide a start and end date");
+        if (validation.error) {
+            response.status(400).json({
+                error: "Bad Request",
+                message: validation.message
+            });
             return;
         }
 
         try {
-            const result = await this._ressourcesRepository.getAvailableRessources(startDate, endDate);
+            const result = await this._ressourcesRepository.getAvailableRessources(validation.startDate!, validation.endDate!);
             response.status(200).send(result);
 
         } catch (e: unknown) {
             if (e instanceof DomainException) {
                 console.error(e.stack);
                 response.status(e.httpStatusCode).send(e.message);
-            } else if (e instanceof Error) {
-                console.error(e.stack);
-                response.status(500).send(`Internal Server Error: ${e.message}`);
             } else {
                 console.error(e);
                 response.status(500).send(`Internal Server Error: ${e}`);
             }
         }
+    }
 
-}
+    public async reserverRessource(request: Request, response: Response): Promise<void> {
+        const { ressource_id, start_date, end_date } = request.body;
+
+        const validation = this.validateDates(start_date as string, end_date as string);
+
+        if (validation.error) {
+            response.status(400).json({
+                error: "Bad Request",
+                message: validation.message
+            });
+            return;
+        }else if (!ressource_id || isNaN(ressource_id)) {
+            response.status(400).json({
+                error: "Bad Request",
+                message: "Veuillez fournir un ressource_id sous forme de nombre"
+            });
+            return;
+        }
+
+        try {
+            await this._ressourcesRepository.reserverRessource(ressource_id, validation.startDate!, validation.endDate!);
+            response.status(201).json({ message: "Ressources réservée" });
+
+        } catch (e: unknown) {
+            if (e instanceof RessourceNotFoundException) {
+                response.status(e.statusCode).json({
+                    error: e.name,
+                    message: e.message
+                });
+                return;
+            }
+            else if (e instanceof DomainException) {
+                console.error(e.stack);
+                response.status(e.httpStatusCode).send(e.message);
+            } else {
+                console.error(e);
+                response.status(500).send(`Internal Server Error: ${e}`);
+            }
+        }
+    }
+
+    private validateDates(startDateString: string | undefined, endDateString: string | undefined): { error: boolean, message?: string, startDate?: Date, endDate?: Date } {
+        if (!startDateString || !endDateString) {
+            return { error: true, message: "Veuillez fournir une start_date et une end_date." };
+        }
+
+        const startDate = new Date(startDateString);
+        const endDate = new Date(endDateString);
+
+        if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+            return { error: true, message: "Les dates doivent être au format AAAA-MM-JJ" };
+        }
+
+        if (startDate > endDate) {
+            return { error: true, message: "La date de début ne peut pas être après la date de fin." };
+        }
+        return { error: false, startDate, endDate };
+    }
+    
 }

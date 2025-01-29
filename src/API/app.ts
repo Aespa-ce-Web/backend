@@ -36,6 +36,8 @@ const registerApp = async () => {
 };
 registerApp();
 
+app.use(express.json()); 
+
 app.get("/meuch_map", (req, res) => {
   res.status(200).json(endpoints);
 });
@@ -43,6 +45,8 @@ app.get("/meuch_map", (req, res) => {
 app.get("/ressources", async (req: express.Request, res: express.Response) =>  await ressourcesController.getAllRessources(req, res));
 
 app.get("/ressources/available", async (req: express.Request, res: express.Response) => await ressourcesController.getAvailableRessources(req, res));
+
+app.post("/ressources/reserver", async (req: express.Request, res: express.Response) => await ressourcesController.reserverRessource(req, res));
 
 app.get("/hello", async (req: express.Request, res: express.Response) => await reportController.hello(req, res));
 
