@@ -48,7 +48,7 @@ export class RessourcesController {
         }
 
         try {
-            const result = await this._ressourcesRepository.getAvailableRessources(validation.startDate!, validation.endDate!);
+            const result = await this._ressourcesRepository.getDisponibilitesRessources(validation.startDate!, validation.endDate!);
             response.status(200).send(result);
 
         } catch (e: unknown) {
@@ -83,7 +83,7 @@ export class RessourcesController {
 
         try {
             await this._ressourcesRepository.reserverRessource(ressource_id, validation.startDate!, validation.endDate!);
-            response.status(201).json({ message: "Ressources réservée" });
+            response.status(201).json({ message: "Ressource réservée" });
 
         } catch (e: unknown) {
             if (e instanceof RessourceNotFoundException) {

@@ -16,11 +16,11 @@ export class RessourcesRepositoryImpl implements RessourcesRepository {
         }
     }
 
-    async getAvailableRessources(startDate: Date, endDate: Date): Promise<Ressource[]> {
+    async getDisponibilitesRessources(startDate: Date, endDate: Date): Promise<Ressource[]> {
         try {
             const result = await pool.query(
                 `
-                SELECT r.*
+                SELECT r.id AS resource_id, r.nom AS resource_nom, r.type AS resource_type, r.group_Id AS resource_groupId, rr.start_date AS reserved_start, rr.end_date AS reserved_end
                 FROM resources r
                 LEFT JOIN resource_reservations rr
                     ON r.id = rr.resource_id
@@ -29,18 +29,56 @@ export class RessourcesRepositoryImpl implements RessourcesRepository {
                         (rr.start_date <= $2 AND rr.end_date >= $2) OR
                         (rr.start_date >= $1 AND rr.end_date <= $2)
                     )
-                WHERE rr.reservation_id IS NULL
+                WHERE rr.reservation_id IS NOT NULL OR rr.reservation_id IS NULL
+                ORDER BY r.id, rr.start_date
                 `,
                 [startDate.toISOString().split("T")[0], endDate.toISOString().split("T")[0]]
             );
-            return result.rows as Ressource[];
+            console.log(result.rows);
+            const resources = result.rows.reduce((acc: any[], row: any) => {
+            let resource = acc.find(r => r.resource_id === row.resource_id);
+            console.log(resource);
+            if (!resource) {
+                resource = {
+                    resource_id: row.resource_id,
+                    resource_name: row.resource_nom,
+                    resource_type: row.resource_type,
+                    resource_groupId: row.resource_groupid,
+                    availability_periods: []
+                };
+                acc.push(resource);
+            }
 
-        } catch (error) {
-            console.error("Erreur lors de la récupération des ressources disponibles :", error);
-            throw new Error('Erreur lors de la récupération des ressources disponibles');
-        }
+            if (row.reserved_start && row.reserved_end) {
+                let reservedStart = new Date(row.reserved_start);
+                let reservedEnd = new Date(row.reserved_end);
+
+                let availablePeriods: { start_date: string, end_date: string }[] = [];
+
+                if (reservedStart > startDate) {
+                    availablePeriods.push({
+                        start_date: startDate.toISOString().split("T")[0],
+                        end_date: reservedStart.toISOString().split("T")[0]
+                    });
+                }
+
+                if (reservedEnd < endDate) {
+                    availablePeriods.push({
+                        start_date: new Date(reservedEnd.setDate(reservedEnd.getDate() + 2)).toISOString().split("T")[0],
+                        end_date: endDate.toISOString().split("T")[0]
+                    });
+                }
+                resource.availability_periods.push(...availablePeriods);
+            }
+            return acc;
+        }, []);
+        return resources;
+    } catch (error) {
+        console.error("Erreur lors de la récupération des ressources disponibles :", error);
+        throw new Error('Erreur lors de la récupération des ressources disponibles');
     }
-
+}
+    
     async reserverRessource(ressourceId: number, startDate: Date, endDate: Date): Promise<void> {
         try {
             await pool.query(
