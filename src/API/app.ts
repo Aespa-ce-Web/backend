@@ -8,6 +8,8 @@ import { RessourcesRepositoryImpl } from "../Infrastructure/Dev/Services/Ressour
 import axios from "axios";
 import * as dotenv from "dotenv";
 import { endpoints } from "../External/meuch_map";
+import { StockController } from "./Controllers/StockController";
+import { StockRepository } from "../Infrastructure/Dev/Services/StockRepository";
 
 
 export const services = new ServiceProvider();
@@ -15,8 +17,10 @@ export const services = new ServiceProvider();
 registerDevServices(services);
 
 const ressourceService = new RessourcesRepositoryImpl();
+const stockService = new StockRepository();
 export const reportController = new HelloController(services);
 export const ressourcesController = new RessourcesController(ressourceService);
+export const stockController = new StockController(stockService);
 
 
 const app = express();
@@ -47,6 +51,12 @@ app.get("/ressources", async (req: express.Request, res: express.Response) =>  a
 app.get("/ressources/available", async (req: express.Request, res: express.Response) => await ressourcesController.getAvailableRessources(req, res));
 
 app.post("/ressources/reserver", async (req: express.Request, res: express.Response) => await ressourcesController.reserverRessource(req, res));
+
+app.get("/stock", async (req: express.Request, res: express.Response) =>  await stockController.getArticles(req, res));
+
+app.post("/stock/entree", async (req: express.Request, res: express.Response) => await stockController.addEntry(req, res));
+
+app.post("/stock/sortie", async (req: express.Request, res: express.Response) => await stockController.addExit(req, res));
 
 app.get("/hello", async (req: express.Request, res: express.Response) => await reportController.hello(req, res));
 
