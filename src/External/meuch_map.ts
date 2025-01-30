@@ -28,5 +28,12 @@ export const endpoints: MeuchEndpointInput[] = [
         description: "Réserver une ressource pendant une période donnée",
         type: "POST",
         body : "{ressource_id:number ,start_date:Date ,end_date:Date}"
+    },
+    {
+        key: "STO_SUPPRIMER_RESERVATION",
+        endpoint: "/ressources/reservation",
+        description: "Supprimer une réservation de ressource",
+        type: "DELETE",
+        body : "{ressource_id:number ,start_date:Date ,end_date:Date}"
     }
 ];

@@ -1,4 +1,5 @@
 import { RessourcesRepository } from "../../../Application/Ressources/Service/RessourcesRepository";
+import { ReservationNotFoundException } from "../../../Domain/Exceptions/ReservationNotFoundException";
 import { RessourceNotFoundException } from "../../../Domain/Exceptions/RessourceNotFoundException";
 import { Ressource } from "../../../Domain/Ressources/Ressource";
 import pool from "../../../External/db";
@@ -96,4 +97,37 @@ export class RessourcesRepositoryImpl implements RessourcesRepository {
             throw new Error('Erreur lors de la réservation de la ressource');
         }
     }
+
+    async supprimerReservationParDate(ressourceId: number, startDate: Date, endDate: Date): Promise<void> {
+        try {
+            const result = await pool.query(
+                `
+                DELETE FROM resource_reservations
+                WHERE resource_id = $1
+                  AND start_date = $2
+                  AND end_date = $3
+                RETURNING *;
+                `,
+                [ressourceId, startDate.toISOString().split("T")[0], endDate.toISOString().split("T")[0]]
+            );
+
+            if (result.rowCount === 0) {
+                console.log(`Aucune réservation trouvée pour la ressource ${ressourceId} entre ${startDate} et ${endDate}`);
+                throw new ReservationNotFoundException();
+            }
+
+            console.log(`Réservation pour la ressource ${ressourceId} entre ${startDate} et ${endDate} supprimée avec succès`);
+        } catch (error) {
+            if (error instanceof Error && (error as any).code === '23503') {
+                throw error;
+            }
+            if (error instanceof ReservationNotFoundException) {
+                throw error;
+            }
+            console.error("Erreur lors de la suppression de la réservation de la ressource :", error);
+            throw new Error('Erreur lors de la suppression de la réservation de la ressource');
+        }
+    }
+
+
 }

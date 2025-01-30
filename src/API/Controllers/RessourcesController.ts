@@ -2,6 +2,8 @@ import { Request, Response } from "express"
 import { DomainException } from "../../Domain/Exceptions";
 import { RessourcesRepository } from "../../Application/Ressources/Service/RessourcesRepository";
 import { RessourceNotFoundException } from "../../Domain/Exceptions/RessourceNotFoundException";
+import { SupprimerReservationRequestDto } from "../../Domain/Reservation/SupprimerReservationRequestDto";
+import { ReservationNotFoundException } from "../../Domain/Exceptions/ReservationNotFoundException";
 
 
 export class RessourcesController {
@@ -120,5 +122,41 @@ export class RessourcesController {
         }
         return { error: false, startDate, endDate };
     }
-    
+
+    public async supprimerReservationParDate(request: Request, response: Response): Promise<void> {
+        const requestDto: SupprimerReservationRequestDto = request.body;
+
+        try {
+            this.validateDates(requestDto.startDate, requestDto.endDate);
+            
+            await this._ressourcesRepository.supprimerReservationParDate(
+                requestDto.ressourceId,  
+                new Date(requestDto.startDate),  
+                new Date(requestDto.endDate)     
+            );
+            response.status(200).json({ message: "Créneau supprimé" });        
+        } catch (e: unknown) {
+            if (e instanceof RessourceNotFoundException) {
+                response.status(e.statusCode).json({
+                    error: e.name,
+                    message: e.message
+                });
+                return;
+            }
+            if (e instanceof ReservationNotFoundException) {
+                response.status(e.statusCode).json({
+                    error: e.name,
+                    message: e.message
+                });
+                return;
+            }
+            else if (e instanceof DomainException) {
+                console.error(e.stack);
+                response.status(e.httpStatusCode).send(e.message);
+            } else {
+                console.error(e);
+                response.status(500).send(`Internal Server Error: ${e}`);
+            }
+        }
+    }
 }

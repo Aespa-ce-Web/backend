@@ -104,10 +104,10 @@ export class StockRepository {
                 throw new ArticleNotFoundException(articleId);
             }
             if (error instanceof ArticleNotFoundException) {
-                throw new ArticleNotFoundException(articleId);
+                throw error;
             }
             if (error instanceof SortieArticleException) {
-                throw new SortieArticleException(articleId, quantite, error.quantiteDisponible);
+                throw error;
             }
             throw new Error("Impossible d'ajouter la sortie de stock.");
         }
@@ -153,5 +153,4 @@ export class StockRepository {
             throw new Error("Impossible de mettre à jour le stock.");
         }
     }
-    
 }
