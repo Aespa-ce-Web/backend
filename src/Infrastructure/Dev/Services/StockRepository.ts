@@ -1,4 +1,3 @@
-import e = require("express");
 import { ArticleNotFoundException } from "../../../Domain/Exceptions/ArticleNotFoundException";
 import { InventaireException } from "../../../Domain/Exceptions/InventaireException";
 import { SortieArticleException } from "../../../Domain/Exceptions/SortieArticleException";
