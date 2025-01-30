@@ -58,6 +58,8 @@ app.post("/stock/entree", async (req: express.Request, res: express.Response) =>
 
 app.post("/stock/sortie", async (req: express.Request, res: express.Response) => await stockController.addExit(req, res));
 
+app.put("/stock/inventaire", async (req: express.Request, res: express.Response) => await stockController.updateInventory(req, res));
+
 app.get("/hello", async (req: express.Request, res: express.Response) => await reportController.hello(req, res));
 
 app.get("/", async (req: express.Request, res: express.Response) => { res.status(200).send(await new Promise((resolve) => resolve("Hello World!")))});

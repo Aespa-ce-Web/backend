@@ -12,7 +12,5 @@ export class SortieArticleException extends Error {
         this.quantiteDisponible = quantiteDisponible;
         Error.captureStackTrace(this, SortieArticleException);
         this.articleId = articleId;
-
-
     }
 }

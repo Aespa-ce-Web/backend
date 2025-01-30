@@ -1,5 +1,8 @@
+import e = require("express");
 import { ArticleNotFoundException } from "../../../Domain/Exceptions/ArticleNotFoundException";
+import { InventaireException } from "../../../Domain/Exceptions/InventaireException";
 import { SortieArticleException } from "../../../Domain/Exceptions/SortieArticleException";
+import { InventaireRequestDto, InventaireResponseDto } from "../../../Domain/Inventaire/InventaireRequestDto";
 import { Article } from "../../../Domain/Stock/Article";
 import pool from "../../../External/db";
 
@@ -21,7 +24,6 @@ export class StockRepository {
 
     async addEntry(articleId: number, quantite: number): Promise<{ nom: string, reference: string, quantite_stock: number }> {
         try {
-            // Exécution de la requête pour ajouter l'entrée dans la table des entrées de stock et mettre à jour la table des articles
             const result = await pool.query(
                 `
                 WITH new_entry AS (
@@ -69,7 +71,7 @@ export class StockRepository {
             if (!article) {
                 throw new ArticleNotFoundException(articleId);
             }
-            
+
             if (article.quantite_stock < quantite) {
                 throw new SortieArticleException(articleId, quantite, article.quantite_stock);
             }
@@ -111,4 +113,46 @@ export class StockRepository {
             throw new Error("Impossible d'ajouter la sortie de stock.");
         }
     }
+
+    async updateStock(inventaire: InventaireRequestDto): Promise<InventaireResponseDto> {
+        try {
+            const results: InventaireResponseDto = [];
+            for (const item of inventaire) {
+                const { articleId, quantiteAjustee } = item;
+
+                if (quantiteAjustee < 0) {
+                    throw new InventaireException(articleId);
+                }
+
+                const result = await pool.query(
+                    `
+                    UPDATE articles
+                    SET quantite_stock = $1
+                    WHERE id = $2
+                    RETURNING id, nom, reference, quantite_stock;
+                    `,
+                    [quantiteAjustee, articleId]
+                );
+    
+                const row = result.rows[0];
+                console.log(row);
+                
+                results.push({
+                    articleId: row.id,
+                    nom: row.nom,
+                    reference: row.reference,
+                    quantite_stock: row.quantite_stock,
+                });
+            }
+    
+            return results;
+        } catch (error) {
+            if (error instanceof InventaireException) {
+                throw new InventaireException(error.articleId);
+            }
+            console.error("Erreur lors de la mise à jour du stock :", error);
+            throw new Error("Impossible de mettre à jour le stock.");
+        }
+    }
+    
 }

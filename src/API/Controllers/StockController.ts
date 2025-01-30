@@ -1,6 +1,8 @@
 import { DomainException } from "../../Domain/Exceptions";
 import { ArticleNotFoundException } from "../../Domain/Exceptions/ArticleNotFoundException";
+import { InventaireException } from "../../Domain/Exceptions/InventaireException";
 import { SortieArticleException } from "../../Domain/Exceptions/SortieArticleException";
+import { InventaireRequestDto } from "../../Domain/Inventaire/InventaireRequestDto";
 import { NouvelleEntreeRequestDto } from "../../Domain/Stock/NouvelleEntreeRequestDto";
 import { NouvelleEntreeResponseDto } from "../../Domain/Stock/NouvelleEntreeResponseDto";
 import { NouvelleSortieRequestDto } from "../../Domain/Stock/NouvelleSortieRequestDto";
@@ -82,7 +84,7 @@ export class StockController {
                 result.quantite_stock
             );
             response.status(200).send(responseDto);
-            
+
         }catch (error : any) {
             if (error instanceof ArticleNotFoundException) {
                 response.status(error.statusCode).json({
@@ -99,6 +101,26 @@ export class StockController {
                 return;
             }
             response.status(500).send(`Internal Server Error: ${error}`);
+        }
+    }
+
+    public async updateInventory(request: Request, response: Response): Promise<void> {
+        try {               
+            const inventaire: InventaireRequestDto = request.body;
+    
+            const result = await this._stockRepository.updateStock(inventaire);
+    
+            response.status(200).send(result);
+        } catch (error) {
+            if (error instanceof InventaireException) {
+                response.status(error.statusCode).json({
+                    error: error.name,
+                    message: error.message
+                });
+                return;
+            }
+            console.error("Erreur lors de la mise à jour de l'inventaire :", error);
+            response.status(500).send("Erreur interne du serveur");
         }
     }
 }
