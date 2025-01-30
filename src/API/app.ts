@@ -46,6 +46,8 @@ app.get("/meuch_map", (req, res) => {
   res.status(200).json(endpoints);
 });
 
+app.post("/register", async (req: express.Request, res: express.Response) =>  await registerApp());
+
 app.get("/ressources", async (req: express.Request, res: express.Response) =>  await ressourcesController.getAllRessources(req, res));
 
 app.get("/ressources/available", async (req: express.Request, res: express.Response) => await ressourcesController.getAvailableRessources(req, res));
