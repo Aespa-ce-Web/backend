@@ -35,10 +35,8 @@ export class RessourcesRepositoryImpl implements RessourcesRepository {
                 `,
                 [startDate.toISOString().split("T")[0], endDate.toISOString().split("T")[0]]
             );
-            console.log(result.rows);
             const resources = result.rows.reduce((acc: any[], row: any) => {
             let resource = acc.find(r => r.resource_id === row.resource_id);
-            console.log(resource);
             if (!resource) {
                 resource = {
                     resource_id: row.resource_id,

@@ -2,10 +2,10 @@ interface MeuchEndpointInput {
     key: string;
     endpoint: string;
     description: string;
-    type: "GET" | "POST" | "PUT" | "DELETE";  // Type de la méthode HTTP
-    routeFormat?: string;  // Format de la route (optionnel)
-    queryParams?: string[];  // Paramètres de requête (optionnels)
-    body?: string;  // Corps de la requête (optionnel)
+    type: "GET" | "POST" | "PUT" | "DELETE";  
+    routeFormat?: string;  
+    queryParams?: string[]; 
+    body?: string;  
 }
 
 export const endpoints: MeuchEndpointInput[] = [

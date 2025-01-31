@@ -1,6 +1,6 @@
 import { HelloController } from "./Controllers";
 import { ServiceProvider } from "../Application/DependencyInjection";
-
+import * as cors from "cors";
 import * as express from "express";
 import registerDevServices from "../Infrastructure/Dev/DependencyInjection";
 import { RessourcesController } from "./Controllers/RessourcesController";
@@ -40,7 +40,14 @@ const registerApp = async () => {
 };
 registerApp();
 
-app.use(express.json()); 
+app.use(express.json());
+
+app.use(cors({
+  origin: 'http://localhost:4200',  // Modifier avec l'URL de ton frontend Angular
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],  // Méthodes autorisées
+  allowedHeaders: ['Content-Type', 'Authorization'],  // En-têtes autorisés
+}));
+
 
 app.get("/meuch_map", (req, res) => {
   res.status(200).json(endpoints);

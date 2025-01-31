@@ -11,7 +11,7 @@ export class StockRepository {
     async getAllArticles(): Promise<Article[]> {
     
         try {
-            const result = await pool.query('SELECT * FROM articles');
+            const result = await pool.query('SELECT * FROM articles ORDER BY nom');
 
             return result.rows as Article[];
         }
@@ -134,7 +134,6 @@ export class StockRepository {
                 );
     
                 const row = result.rows[0];
-                console.log(row);
                 
                 results.push({
                     articleId: row.id,
