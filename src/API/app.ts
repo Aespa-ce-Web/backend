@@ -43,7 +43,7 @@ registerApp();
 app.use(express.json());
 
 app.use(cors({
-  origin: 'http://localhost:4200',  // Modifier avec l'URL de ton frontend Angular
+  origin: '*',  // Modifier avec l'URL de ton frontend Angular
   methods: ['GET', 'POST', 'PUT', 'DELETE'],  // Méthodes autorisées
   allowedHeaders: ['Content-Type', 'Authorization'],  // En-têtes autorisés
 }));
