@@ -4,7 +4,6 @@ import { RessourcesRepository } from "../../Application/Ressources/Service/Resso
 import { RessourceNotFoundException } from "../../Domain/Exceptions/RessourceNotFoundException";
 import { SupprimerReservationRequestDto } from "../../Domain/Reservation/SupprimerReservationRequestDto";
 import { ReservationNotFoundException } from "../../Domain/Exceptions/ReservationNotFoundException";
-import { RecupererReservationParRessourceDto } from "../../Domain/Reservation/RecupererReservationParRessourceDto";
 
 export class RessourcesController {
 
@@ -161,9 +160,12 @@ export class RessourcesController {
     }
 
     public async getReservationParResource(request: Request, response: Response): Promise<void> {
-        const requestDto: RecupererReservationParRessourceDto = request.body;
-
-        const validation = this.validateDates(requestDto.start_date, requestDto.end_date);
+        const ressource_id = request.query.ressource_id as string;
+        const start_date = request.query.start_date as string;
+        const end_date = request.query.end_date as string;
+        
+        console.log(ressource_id, start_date, end_date);
+        const validation = this.validateDates(start_date, end_date);
 
         if (validation.error) {
             response.status(400).send({
@@ -173,7 +175,7 @@ export class RessourcesController {
             return;
         }
 
-        if (!requestDto.ressource_id || isNaN(requestDto.ressource_id as any)) {
+        if (!ressource_id || isNaN(ressource_id as any)) {
             response.status(400).send({
                 error: "Bad Request",
                 message: "Veuillez fournir un ressource_id sous forme de nombre"
@@ -183,9 +185,9 @@ export class RessourcesController {
 
         try {
             const result = await this._ressourcesRepository.getReservationParRessources(
-                requestDto.ressource_id,  
-                new Date(requestDto.start_date),  
-                new Date(requestDto.end_date));
+                parseInt(ressource_id),  
+                new Date(start_date),  
+                new Date(end_date));
             response.status(200).send(result);
 
         } catch (e: unknown) {
