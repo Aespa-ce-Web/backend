@@ -130,7 +130,7 @@ export class RessourcesController {
             this.validateDates(requestDto.start_date, requestDto.end_date);
             
             await this._ressourcesRepository.supprimerReservationParDate(
-                requestDto.ressourceId,  
+                requestDto.ressource_id,  
                 new Date(requestDto.start_date),  
                 new Date(requestDto.end_date)     
             );

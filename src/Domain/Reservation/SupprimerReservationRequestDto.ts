@@ -1,5 +1,5 @@
 export interface SupprimerReservationRequestDto {
-    ressourceId: number;
+    ressource_id: number;
     start_date: string;  
     end_date: string;    
 }
