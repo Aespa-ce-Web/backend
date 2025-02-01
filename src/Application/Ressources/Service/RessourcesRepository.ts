@@ -1,3 +1,4 @@
+import { Reservation } from "../../../Domain/Reservation/Reservation";
 import { Ressource } from "../../../Domain/Ressources/Ressource";
 import { DomainService } from "../../DependencyInjection";
 
@@ -13,4 +14,6 @@ export abstract class RessourcesRepository extends DomainService {
     public abstract reserverRessource(ressourceId: number, startDate: Date, endDate: Date): Promise<void>;
 
     public abstract supprimerReservationParDate(ressourceId: number, startDate: Date, endDate: Date): Promise<void>;
+
+    public abstract getReservationParRessources(ressourceId: number, startDate: Date, endDate: Date): Promise<Reservation[]>;
 }

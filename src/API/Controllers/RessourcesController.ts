@@ -4,7 +4,7 @@ import { RessourcesRepository } from "../../Application/Ressources/Service/Resso
 import { RessourceNotFoundException } from "../../Domain/Exceptions/RessourceNotFoundException";
 import { SupprimerReservationRequestDto } from "../../Domain/Reservation/SupprimerReservationRequestDto";
 import { ReservationNotFoundException } from "../../Domain/Exceptions/ReservationNotFoundException";
-
+import { RecupererReservationParRessourceDto } from "../../Domain/Reservation/RecupererReservationParRessourceDto";
 
 export class RessourcesController {
 
@@ -158,5 +158,51 @@ export class RessourcesController {
                 response.status(500).send(`Internal Server Error: ${e}`);
             }
         }
+    }
+
+    public async getReservationParResource(request: Request, response: Response): Promise<void> {
+        const requestDto: RecupererReservationParRessourceDto = request.body;
+
+        const validation = this.validateDates(requestDto.start_date, requestDto.end_date);
+
+        if (validation.error) {
+            response.status(400).send({
+                error: "Bad Request",
+                message: validation.message
+            });
+            return;
+        }
+
+        if (!requestDto.ressource_id || isNaN(requestDto.ressource_id as any)) {
+            response.status(400).send({
+                error: "Bad Request",
+                message: "Veuillez fournir un ressource_id sous forme de nombre"
+            });
+            return;
+        }
+
+        try {
+            const result = await this._ressourcesRepository.getReservationParRessources(
+                requestDto.ressource_id,  
+                new Date(requestDto.start_date),  
+                new Date(requestDto.end_date));
+            response.status(200).send(result);
+
+        } catch (e: unknown) {
+            if (e instanceof RessourceNotFoundException) {
+                response.status(e.statusCode).json({
+                    error: e.name,
+                    message: e.message
+                });
+                return;
+            }
+            else if (e instanceof DomainException) {
+                console.error(e.stack);
+                response.status(e.httpStatusCode).send(e.message);
+            } else {
+                console.error(e);
+                response.status(500).send(`Internal Server Error: ${e}`);
+            }
+        }   
     }
 }

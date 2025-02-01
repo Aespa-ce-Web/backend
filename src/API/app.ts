@@ -63,6 +63,8 @@ app.post("/ressources/reserver", async (req: express.Request, res: express.Respo
 
 app.delete("/ressources/reservation", async (req: express.Request, res: express.Response) => await ressourcesController.supprimerReservationParDate(req, res));
 
+app.get("/ressources/reservations", async (req: express.Request, res: express.Response) => await ressourcesController.getReservationParResource(req, res));
+
 app.get("/stock", async (req: express.Request, res: express.Response) =>  await stockController.getArticles(req, res));
 
 app.post("/stock/entree", async (req: express.Request, res: express.Response) => await stockController.addEntry(req, res));

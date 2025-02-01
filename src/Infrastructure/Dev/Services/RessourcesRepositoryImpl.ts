@@ -1,6 +1,7 @@
 import { RessourcesRepository } from "../../../Application/Ressources/Service/RessourcesRepository";
 import { ReservationNotFoundException } from "../../../Domain/Exceptions/ReservationNotFoundException";
 import { RessourceNotFoundException } from "../../../Domain/Exceptions/RessourceNotFoundException";
+import { Reservation } from "../../../Domain/Reservation/Reservation";
 import { Ressource } from "../../../Domain/Ressources/Ressource";
 import pool from "../../../External/db";
 
@@ -127,5 +128,39 @@ export class RessourcesRepositoryImpl implements RessourcesRepository {
         }
     }
 
+    async getReservationParRessources(ressourceId: number, startDate: Date, endDate: Date): Promise<Reservation[]> {
+        try {
+            const result = await pool.query(
+                `
+                SELECT *
+                FROM resource_reservations
+                WHERE resource_id = $1
+                  AND start_date >= $2
+                  AND end_date <= $3
+                `,
+                [ressourceId, startDate.toISOString().split("T")[0], endDate.toISOString().split("T")[0]]
+            );
 
+            const reservations = result.rows.map((row: any) => {
+                //Décalage horaire lors de la récupération dans la bdd
+                row.start_date.setHours(startDate.getHours() + 2);
+                row.end_date.setHours(endDate.getHours() + 2);
+
+                return {
+                    reservation_id: row.id,
+                    ressource_id: row.resource_id,
+                    start_date: row.start_date.toISOString().split("T")[0],
+                    end_date: row.end_date.toISOString().split("T")[0]
+                };
+            });
+            console.log(reservations);
+            return reservations;
+        } catch (error) {
+            if (error instanceof Error && (error as any).code === '23503') {
+                throw error;
+            }
+            console.error("Erreur lors de la récupération des réservations pour la ressource :", error);
+            throw new Error('Erreur lors de la récupération des réservations pour la ressource');
+        }
+    }
 }
