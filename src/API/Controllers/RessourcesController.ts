@@ -127,12 +127,12 @@ export class RessourcesController {
         const requestDto: SupprimerReservationRequestDto = request.body;
 
         try {
-            this.validateDates(requestDto.startDate, requestDto.endDate);
+            this.validateDates(requestDto.start_date, requestDto.end_date);
             
             await this._ressourcesRepository.supprimerReservationParDate(
                 requestDto.ressourceId,  
-                new Date(requestDto.startDate),  
-                new Date(requestDto.endDate)     
+                new Date(requestDto.start_date),  
+                new Date(requestDto.end_date)     
             );
             response.status(200).json({ message: "Créneau supprimé" });        
         } catch (e: unknown) {
