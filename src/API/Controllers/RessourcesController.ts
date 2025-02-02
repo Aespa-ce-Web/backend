@@ -64,7 +64,7 @@ export class RessourcesController {
     }
 
     public async reserverRessource(request: Request, response: Response): Promise<void> {
-        const { ressource_id, start_date, end_date } = request.body;
+        const { ressource_id, start_date, end_date, isAbsence } = request.body;
 
         const validation = this.validateDates(start_date as string, end_date as string);
 
@@ -83,7 +83,7 @@ export class RessourcesController {
         }
 
         try {
-            await this._ressourcesRepository.reserverRessource(ressource_id, validation.startDate!, validation.endDate!);
+            await this._ressourcesRepository.reserverRessource(ressource_id, validation.startDate!, validation.endDate!, isAbsence);
             response.status(201).json({ message: "Ressource réservée" });
 
         } catch (e: unknown) {
@@ -161,19 +161,6 @@ export class RessourcesController {
 
     public async getReservationParResource(request: Request, response: Response): Promise<void> {
         const ressource_id = request.query.ressource_id as string;
-        const start_date = request.query.start_date as string;
-        const end_date = request.query.end_date as string;
-        
-        console.log(ressource_id, start_date, end_date);
-        const validation = this.validateDates(start_date, end_date);
-
-        if (validation.error) {
-            response.status(400).send({
-                error: "Bad Request",
-                message: validation.message
-            });
-            return;
-        }
 
         if (!ressource_id || isNaN(ressource_id as any)) {
             response.status(400).send({
@@ -186,8 +173,8 @@ export class RessourcesController {
         try {
             const result = await this._ressourcesRepository.getReservationParRessources(
                 parseInt(ressource_id),  
-                new Date(start_date),  
-                new Date(end_date));
+            );
+            
             response.status(200).send(result);
 
         } catch (e: unknown) {

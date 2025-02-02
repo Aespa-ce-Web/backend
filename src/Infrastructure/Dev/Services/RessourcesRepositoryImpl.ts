@@ -79,14 +79,17 @@ export class RessourcesRepositoryImpl implements RessourcesRepository {
     }
 }
     
-    async reserverRessource(ressourceId: number, startDate: Date, endDate: Date): Promise<void> {
+    async reserverRessource(ressourceId: number, startDate: Date, endDate: Date, isAbsence: boolean): Promise<void> {
         try {
+            if (!isAbsence) {
+                isAbsence = false;
+            }
             await pool.query(
                 `
-                INSERT INTO resource_reservations (resource_id, start_date, end_date)
-                VALUES ($1, $2, $3)
+                INSERT INTO resource_reservations (resource_id, start_date, end_date, isAbsence)
+                VALUES ($1, $2, $3, $4);
                 `,
-                [ressourceId, startDate.toISOString().split("T")[0], endDate.toISOString().split("T")[0]]
+                [ressourceId, startDate.toISOString().split("T")[0], endDate.toISOString().split("T")[0], isAbsence]
             );
         } catch (error) {
             if (error instanceof Error && (error as any).code === '23503') {
@@ -128,32 +131,30 @@ export class RessourcesRepositoryImpl implements RessourcesRepository {
         }
     }
 
-    async getReservationParRessources(ressourceId: number, startDate: Date, endDate: Date): Promise<Reservation[]> {
+    async getReservationParRessources(ressourceId: number): Promise<Reservation[]> {
         try {
             const result = await pool.query(
                 `
                 SELECT *
                 FROM resource_reservations
                 WHERE resource_id = $1
-                  AND start_date >= $2
-                  AND end_date <= $3
                 `,
-                [ressourceId, startDate.toISOString().split("T")[0], endDate.toISOString().split("T")[0]]
+                [ressourceId]
             );
-
+            
             const reservations = result.rows.map((row: any) => {
                 //Décalage horaire lors de la récupération dans la bdd
-                row.start_date.setHours(startDate.getHours() + 2);
-                row.end_date.setHours(endDate.getHours() + 2);
+                row.start_date.setHours(row.start_date.getHours() + 2);
+                row.end_date.setHours(row.start_date.getHours() + 2);
 
                 return {
                     reservation_id: row.id,
                     ressource_id: row.resource_id,
                     start_date: row.start_date.toISOString().split("T")[0],
-                    end_date: row.end_date.toISOString().split("T")[0]
+                    end_date: row.end_date.toISOString().split("T")[0],
+                    isAbsence: row.isabsence
                 };
             });
-            console.log(reservations);
             return reservations;
         } catch (error) {
             if (error instanceof Error && (error as any).code === '23503') {

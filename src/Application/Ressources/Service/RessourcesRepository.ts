@@ -11,9 +11,9 @@ export abstract class RessourcesRepository extends DomainService {
 
     public abstract getDisponibilitesRessources(startDate: Date, endDate: Date): Promise<Ressource[]>;
 
-    public abstract reserverRessource(ressourceId: number, startDate: Date, endDate: Date): Promise<void>;
+    public abstract reserverRessource(ressourceId: number, startDate: Date, endDate: Date, isAbsence: boolean): Promise<void>;
 
     public abstract supprimerReservationParDate(ressourceId: number, startDate: Date, endDate: Date): Promise<void>;
 
-    public abstract getReservationParRessources(ressourceId: number, startDate: Date, endDate: Date): Promise<Reservation[]>;
+    public abstract getReservationParRessources(ressourceId: number): Promise<Reservation[]>;
 }
