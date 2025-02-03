@@ -2,6 +2,7 @@ import { RessourcesRepository } from "../../../Application/Ressources/Service/Re
 import { ReservationNotFoundException } from "../../../Domain/Exceptions/ReservationNotFoundException";
 import { RessourceNotFoundException } from "../../../Domain/Exceptions/RessourceNotFoundException";
 import { Reservation } from "../../../Domain/Reservation/Reservation";
+import { NouvelleRessourceDto } from "../../../Domain/Ressources/NouvelleRessourceDto";
 import { Ressource } from "../../../Domain/Ressources/Ressource";
 import pool from "../../../External/db";
 
@@ -162,6 +163,24 @@ export class RessourcesRepositoryImpl implements RessourcesRepository {
             }
             console.error("Erreur lors de la récupération des réservations pour la ressource :", error);
             throw new Error('Erreur lors de la récupération des réservations pour la ressource');
+        }
+    }
+
+    async newRessource(ressource: NouvelleRessourceDto): Promise<Ressource> {
+        try {
+            const result = await pool.query(
+                `
+                INSERT INTO resources (nom, type, group_id)
+                VALUES ($1, $2, $3)
+                RETURNING *;
+                `,
+                [ressource.nom, ressource.type, ressource.group_id]
+            );
+
+            return result.rows[0] as Ressource;
+        } catch (error) {
+            console.error("Erreur lors de la création de la ressource :", error);
+            throw new Error('Erreur lors de la création de la ressource');
         }
     }
 }

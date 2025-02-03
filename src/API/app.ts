@@ -65,6 +65,8 @@ app.delete("/ressources/reservation", async (req: express.Request, res: express.
 
 app.get("/ressources/reservations", async (req: express.Request, res: express.Response) => await ressourcesController.getReservationParResource(req, res));
 
+app.post("/ressources/new", async (req: express.Request, res: express.Response) => await ressourcesController.newRessource(req, res));
+
 app.get("/stock", async (req: express.Request, res: express.Response) =>  await stockController.getArticles(req, res));
 
 app.post("/stock/entree", async (req: express.Request, res: express.Response) => await stockController.addEntry(req, res));
@@ -73,12 +75,12 @@ app.post("/stock/sortie", async (req: express.Request, res: express.Response) =>
 
 app.put("/stock/inventaire", async (req: express.Request, res: express.Response) => await stockController.updateInventory(req, res));
 
+app.post("/stock/new-article", async (req: express.Request, res: express.Response) => await stockController.newArticle(req, res));
+
 app.get("/hello", async (req: express.Request, res: express.Response) => await reportController.hello(req, res));
 
 app.get("/", async (req: express.Request, res: express.Response) => { res.status(200).send(await new Promise((resolve) => resolve("Hello World!")))});
 
 app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`)
-  
-
+  console.log(`Example app listening on port ${port}`);
 })

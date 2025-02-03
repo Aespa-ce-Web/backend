@@ -3,6 +3,7 @@ import { ArticleNotFoundException } from "../../Domain/Exceptions/ArticleNotFoun
 import { InventaireException } from "../../Domain/Exceptions/InventaireException";
 import { SortieArticleException } from "../../Domain/Exceptions/SortieArticleException";
 import { InventaireRequestDto } from "../../Domain/Inventaire/InventaireRequestDto";
+import { NouvelArticleRequestDto } from "../../Domain/Stock/NouvelArticleRequestDto";
 import { NouvelleEntreeRequestDto } from "../../Domain/Stock/NouvelleEntreeRequestDto";
 import { NouvelleEntreeResponseDto } from "../../Domain/Stock/NouvelleEntreeResponseDto";
 import { NouvelleSortieRequestDto } from "../../Domain/Stock/NouvelleSortieRequestDto";
@@ -120,6 +121,17 @@ export class StockController {
                 return;
             }
             console.error("Erreur lors de la mise à jour de l'inventaire :", error);
+            response.status(500).send("Erreur interne du serveur");
+        }
+    }
+
+    public async newArticle(request: Request, response: Response): Promise<void> {
+        try {
+            const articleRequestDto: NouvelArticleRequestDto = request.body;
+            const result = await this._stockRepository.newArticle(articleRequestDto);
+            response.status(201).send(result);
+        } catch (error) {
+            console.error("Erreur lors de la création d'un nouvel article :", error);
             response.status(500).send("Erreur interne du serveur");
         }
     }

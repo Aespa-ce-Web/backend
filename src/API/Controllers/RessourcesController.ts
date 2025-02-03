@@ -4,6 +4,7 @@ import { RessourcesRepository } from "../../Application/Ressources/Service/Resso
 import { RessourceNotFoundException } from "../../Domain/Exceptions/RessourceNotFoundException";
 import { SupprimerReservationRequestDto } from "../../Domain/Reservation/SupprimerReservationRequestDto";
 import { ReservationNotFoundException } from "../../Domain/Exceptions/ReservationNotFoundException";
+import { NouvelleRessourceDto } from "../../Domain/Ressources/NouvelleRessourceDto";
 
 export class RessourcesController {
 
@@ -193,5 +194,23 @@ export class RessourcesController {
                 response.status(500).send(`Internal Server Error: ${e}`);
             }
         }   
+    }
+
+    public async newRessource(request: Request, response: Response): Promise<void> {
+        const requestDto: NouvelleRessourceDto = request.body;
+
+        try {
+            const result = await this._ressourcesRepository.newRessource(requestDto);
+            response.status(201).send(result);
+
+        } catch (e: unknown) {
+            if (e instanceof DomainException) {
+                console.error(e.stack);
+                response.status(e.httpStatusCode).send(e.message);
+            } else {
+                console.error(e);
+                response.status(500).send(`Internal Server Error: ${e}`);
+            }
+        }
     }
 }

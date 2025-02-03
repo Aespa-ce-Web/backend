@@ -3,6 +3,7 @@ import { InventaireException } from "../../../Domain/Exceptions/InventaireExcept
 import { SortieArticleException } from "../../../Domain/Exceptions/SortieArticleException";
 import { InventaireRequestDto, InventaireResponseDto } from "../../../Domain/Inventaire/InventaireRequestDto";
 import { Article } from "../../../Domain/Stock/Article";
+import { NouvelArticleRequestDto } from "../../../Domain/Stock/NouvelArticleRequestDto";
 import pool from "../../../External/db";
 
 
@@ -150,6 +151,22 @@ export class StockRepository {
             }
             console.error("Erreur lors de la mise à jour du stock :", error);
             throw new Error("Impossible de mettre à jour le stock.");
+        }
+    }
+
+    public newArticle(article: NouvelArticleRequestDto): Promise<Article> {
+        try {
+            return pool.query(
+                `
+                INSERT INTO articles (nom, reference, prix_unitaire)
+                VALUES ($1, $2, $3)
+                RETURNING *;
+                `,
+                [article.nom, article.reference, article.prix_unitaire]
+            ).then(result => result.rows[0]);
+        } catch (error) {
+            console.error("Erreur lors de l'ajout d'un article :", error);
+            throw new Error("Impossible d'ajouter l'article.");
         }
     }
 }
